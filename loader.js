@@ -192,7 +192,12 @@
       this.progress(1, "handshake"); await this.handshake(options.autoReset !== false, initialTarget?.CONFIG.handshakeRetries || 3, initialTarget?.CONFIG.handshakeDurationMs || 6); this.progress(4, "boot-info"); await delay(100); await this.getBootInfo();
       if (this.target.CONFIG.loadFunction === 1) await this.loadHelper(); else { await this.setDeviceTimeout(10000); await this.configureBaudRate(); }
       this.progress(7, "flash-config"); const flash = await this.configureFlash(); if (address + data.length > flash.flashSize) throw new Error(`镜像范围超过 Flash 容量 ${flash.flashSize} 字节`);
-      this.progress(10, "erase"); await this.eraseFlash(address, data.length); this.progress(15, "write", { written: 0, total: data.length }); await this.writeFlash(data, address); this.progress(87, "verify");
+      this.ensureNotCancelled();
+      this.progress(10, options.eraseAll ? "erase-all" : "erase");
+      if (options.eraseAll) this.log(`正在擦除全部 Flash（${flash.flashSize} 字节）`);
+      await this.eraseFlash(options.eraseAll ? 0 : address, options.eraseAll ? flash.flashSize : data.length);
+      this.ensureNotCancelled();
+      this.progress(15, "write", { written: 0, total: data.length }); await this.writeFlash(data, address); this.progress(87, "verify");
       const hash = await this.verifyFlash(data, address); this.progress(100, "done"); if (options.runAfterFlash !== false) await this.resetToRun();
       return { chip: this.target.CHIP_NAME, version: this.version, bootInfo: this.bootInfo, jedec: flash.jedec, flashSize: flash.flashSize, flashConfig: flash.config, flashPin: flash.pin, sha256: hash, elapsedMs: Date.now() - startedAt };
     }

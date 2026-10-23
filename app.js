@@ -14,6 +14,7 @@
     fileMeta: document.querySelector("#file-meta"),
     chipSelect: document.querySelector("#chip-select"),
     autoReset: document.querySelector("#auto-reset"),
+    eraseAll: document.querySelector("#erase-all"),
     runAfterFlash: document.querySelector("#run-after-flash"),
     flashButton: document.querySelector("#flash-button"),
     cancelButton: document.querySelector("#cancel-button"),
@@ -241,6 +242,7 @@
     elements.disconnectButton.disabled = !connected || flashing;
     elements.fileInput.disabled = flashing;
     elements.chipSelect.disabled = flashing;
+    elements.eraseAll.disabled = flashing;
     elements.flashButton.disabled = !usable || !image || flashing;
     elements.cancelButton.hidden = !flashing;
   }
@@ -299,6 +301,7 @@
     "boot-info": "读取芯片信息",
     "flash-config": "配置 Flash",
     erase: "擦除 Flash",
+    "erase-all": "擦除全部 Flash",
     verify: "校验写入结果",
     hash: "计算本地 SHA-256",
     done: "烧写完成",
@@ -331,6 +334,7 @@
       const result = await flasher.flashWhole(image, {
         chip: elements.chipSelect.value || undefined,
         autoReset: elements.autoReset.checked,
+        eraseAll: elements.eraseAll.checked,
         runAfterFlash: elements.runAfterFlash.checked,
       });
       const seconds = (result.elapsedMs / 1000).toFixed(1);
